@@ -22,12 +22,12 @@ class CountyController extends Controller
                 'region_name' => 'required|string|max:255|unique:regions,name',
                 'subcounty_name' => 'required|string|max:255|unique:subcounties,name',
             ]);
-    
+
             // ✅ Create County, Region, Subcounty
             $county = County::create(['name' => $validated['county_name']]);
             $region = $county->regions()->create(['name' => $validated['region_name']]);
             $region->subcounties()->create(['name' => $validated['subcounty_name']]);
-    
+
             // ✅ Return success response
             return response()->json([
                 'message' => 'County with region and subcounty created successfully!',
@@ -35,14 +35,14 @@ class CountyController extends Controller
                 'region' => $region->name,
                 'subcounty' => $region->subcounties()->first()->name,
             ], 201);
-    
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             // 🛑 Handle validation errors specifically
             return response()->json([
                 'message' => 'Validation failed!',
                 'errors' => $e->errors(),
             ], 422);
-    
+
         } catch (\Exception $e) {
             // 🛑 Catch any unexpected errors
             return response()->json([
@@ -51,5 +51,8 @@ class CountyController extends Controller
             ], 500);
         }
     }
-    
+
+    public function counties(){
+        return view('region.county');
+    }
 }

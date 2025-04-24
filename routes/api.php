@@ -2,26 +2,51 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\CountyApiController;
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+use App\Http\Controllers\Api\V1\CountyApiController;
+use App\Http\Controllers\Api\V1\NewsApiController;
+use App\Http\Controllers\Api\V1\AccountController;
+
+
+
+
+Route::get('/user', function (Request $request) {
     return $request->user();
 });
 
-    // middleware('auth:sanctum')
-    Route::prefix('accountacore')->group(function () {
-        Route::get('/counties', [CountyApiController::class, 'getCounties']);
-        Route::get('/regions/{county_id}', [CountyApiController::class, 'getRegionsByCounty']);
-        Route::get('/subcounties/{region_id}', [CountyApiController::class, 'getSubcountiesByRegion']);
-        Route::post('user/save-location',[CountyApiController::class,'saveUserLocation']); 
-    });
+Route::get('test',function(){
+    return response()->json(['heeelo'=> 'tet']);
+});
+
+Route::post('signup',[AccountController::class,'userSignUp']);
+Route::post('login',[AccountController::class,'login']);
+Route::post('verify_otp',[AccountController::class,'verifyOtp']);
+Route::post("update/county",[AccountController::class,'updateCounty']);
+Route::post("update/constituency",[AccountController::class,'updateConstituency']);
+Route::post("update/subcounty",[AccountController::class,'updateSubCounty']);
+
+
+
+
+// middleware('auth:sanctum')
+Route::prefix('v1/accountacore')->group(function () {
+    Route::get('/counties', [CountyApiController::class, 'getCounties']);
+    Route::get('/regions/{county_id}', [CountyApiController::class, 'getRegionsByCounty']);
+    Route::get('/subcounties/{region_id}', [CountyApiController::class, 'getSubcountiesByRegion']);
+    Route::post('user/save-location', [CountyApiController::class, 'saveUserLocation']);
+    Route::get('user_data/{id}',[AccountController::class,'getUser']);
+    // Get News (National + Local)
+    Route::get('/news/{user_id}', [NewsApiController::class, 'getNewsByLocation']);
+
+    // Add News (Admin feature)
+    Route::post('/news', [NewsApiController::class, 'store']);
+
+    // Route::post('/addbookmark/{userid}/{newsId}',[NewsApiController::class,'addBookmark']);
+    Route::get('fetch_user/bookmarks/{id}',[NewsApiController::class,'getUserBookmarks']);
+    Route::get('/addbookmark/{userid}/{newsId}',[AccountController::class,'addBookmark']);
+});
+
+
+Route::get('/phpinfo', function () {
+    phpinfo();
+});

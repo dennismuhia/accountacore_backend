@@ -6,17 +6,17 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Sanctum\HasApiTokens;
+// use Laravel\Fortify\TwoFactorAuthenticatable;
+// use Laravel\Jetstream\HasProfilePhoto;
+// use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens;
+    // use HasApiTokens;
     use HasFactory;
-    use HasProfilePhoto;
+    // use HasProfilePhoto;
     use Notifiable;
-    use TwoFactorAuthenticatable;
+    // use TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -27,7 +27,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-         'county_id', 'region_id', 'subcounty_id'
+        'phone_number',
+        'county_id',
+        'region_id',
+        'subcounty_id',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'slug'
     ];
 
     /**
@@ -60,15 +66,23 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    public function county() {
+    public function county()
+    {
         return $this->belongsTo(County::class);
     }
 
-    public function region() {
+    public function region()
+    {
         return $this->belongsTo(Region::class);
     }
 
-    public function subcounty() {
+    public function subcounty()
+    {
         return $this->belongsTo(Subcounty::class);
     }
+    public function bookmarkedNews()
+{
+    return $this->belongsToMany(News::class, 'news_user')->withTimestamps();
+}
+
 }

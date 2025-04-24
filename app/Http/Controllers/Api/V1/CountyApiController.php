@@ -16,19 +16,54 @@ class CountyApiController extends Controller
         return response()->json($counties);
     }
 
-    public function getCounties()
+    // public function getCounties()
+    // {
+    //     return response()->json(County::all());
+    // }
+    public function getCounties(Request $request)
     {
-        return response()->json(County::all());
+        $query = County::query();
+
+        // Check if a search term exists
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Get the results
+        $counties = $query->get();
+
+        return response()->json($counties);
     }
 
-    public function getRegionsByCounty($county_id)
+    public function getRegionsByCounty(Request $request, $county_id)
     {
-        return response()->json(Region::where('county_id', $county_id)->with('county')->get());
+        $query = Region::where('county_id', $county_id)->with('county');
+
+        // Optional search term
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        $regions = $query->get();
+
+        return response()->json($regions);
     }
 
-    public function getSubcountiesByRegion($region_id)
+    public function getSubcountiesByRegion(Request $request, $region_id)
     {
-        return response()->json(Subcounty::where('region_id', $region_id)->get());
+        $query = Subcounty::where('region_id', $region_id);
+
+        // Optional search by name
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        $subcounties = $query->get();
+
+        return response()->json($subcounties);
     }
 
     // app/Http/Controllers/LocationController.php

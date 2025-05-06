@@ -9,6 +9,8 @@ use App\Models\Subcounty;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
 
 class WriteNews extends Component
 {
@@ -36,11 +38,28 @@ class WriteNews extends Component
     //     'quillContentUpdated' => 'updateContent',
     // ];
 
+
+    protected $listeners = [
+        'contentUpdated', // not bodyUpdated
+        'requestContent'
+    ];
+
+    public function contentUpdated($html)
+    {
+        $this->content = $html;
+    }
+
+    public function requestContent()
+    {
+        $this->emit('hydrateContent', $this->content);
+    }
+
+
     protected $rules = [
         'title' => 'required|string|max:255',
         'content' => 'required',
         'newsType' => 'required|in:national,local',
-        'image' => 'nullable|image|max:2048',
+       'image' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
         'selectedCountyId' => 'required_if:newsType,local',
     ];
 
@@ -51,16 +70,18 @@ class WriteNews extends Component
         'selectedCountyId.required_if' => 'Please select a county for local news.',
     ];
 
-    public function updatedNewsType($value)
-    {
-        if ($value === 'national') {
-            $this->reset([
-                'selectedCountyId', 'selectedCounty',
-                'selectedConstituencyId', 'selectedConstituency',
-                'selectedSubcountyId', 'selectedSubcounty'
-            ]);
-        }
+
+public function updatedNewsType($value)
+{
+    if ($value !== 'local') {
+        $this->reset([
+            'searchCounty',
+            'selectedCounty',
+            'selectedCountyId',
+            'counties',
+        ]);
     }
+}
 
     public function updatedSearchCounty()
     {
@@ -98,16 +119,12 @@ class WriteNews extends Component
         $this->searchSubcounty = '';
     }
 
-    // public function updateContent($value)
-    // {
-    //     $this->content = $value;
-    // }
-
     public function createNews()
     {
         $this->validate();
 
         try {
+
             $news = new News();
             $news->title = $this->title;
             $news->content = $this->content;
@@ -120,7 +137,14 @@ class WriteNews extends Component
             }
 
             if ($this->image) {
-                $news->image = $this->image->store('news_images', 'public');
+                // Generate a custom filename: slugified title + timestamp + extension
+                $filename = Str::slug($this->title) . '-' . time() . '.' . $this->image->getClientOriginalExtension();
+
+                // Store the file in the 'public/news_images' directory
+                $this->image->storeAs('news_images', $filename, 'public');
+
+                // Save the path in the DB
+                $news->image = 'news_images/' . $filename;
             }
 
             $news->save();

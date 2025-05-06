@@ -14,4 +14,8 @@ class County extends Model
     {
         return $this->hasMany(Region::class);
     }
+    public function news()
+    {
+        return $this->hasMany(News::class);
+    }
 }

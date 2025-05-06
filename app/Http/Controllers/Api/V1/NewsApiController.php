@@ -105,4 +105,6 @@ class NewsApiController extends Controller
             'data' => $bookmarks,
         ]);
     }
+
+   
 }

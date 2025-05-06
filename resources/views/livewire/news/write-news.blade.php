@@ -1,136 +1,234 @@
-<div class="p-4 sm:ml-64">
-    <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
-        <form wire:submit.prevent="createNews" class="space-y-6">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-8">
+    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-3xl p-6 sm:p-10">
+        <h1 class="text-3xl font-bold mb-8 text-gray-800 dark:text-gray-100 flex items-center gap-3">
+
+            📰 Publish News
+        </h1>
+
+        <form wire:submit.prevent="createNews" class="space-y-10">
             @csrf
-            <!-- Top Grid Section -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <!-- NEWS TYPE -->
-                <div class="flex flex-col items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800 h-full">
-                    <label for="newsType" class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">News
-                        Type</label>
-                    <select name="newsType" wire:model="newsType"
-                        class="w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option value="" class="text-gray-500 dark:text-gray-400" disabled>Select news type</option>
+
+            <!-- Top grid section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 m-8">
+                <!-- News Type -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">News Type</label>
+                    <select wire:model.live="newsType"
+                        class="w-full px-3 py-2 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-full shadow-sm bg-white dark:bg-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        <option value="" disabled>Select type…</option>
                         <option value="national">National</option>
                         <option value="local">Local</option>
                     </select>
+                    @error('newsType')
+                        <span class="block text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <!-- COUNTY -->
-                <div class="flex flex-col items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800 h-full">
-                    <label for="county" class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">County</label>
-                    <p class="text-green-500 text-sm mb-1">{{$selectedCounty}}</p>
-                    <div class="relative w-full">
-                        <input id="county" type="text" wire:model.live="searchCounty"
-                            placeholder="{{ $newsType === 'local' ? 'Search for a county...' : 'Select local news to enable' }}"
-                            class="w-full px-4 py-2 mt-4 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                        @if(!empty($counties))
-                            <ul
-                                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                                @foreach($counties as $county)
-                                    <li wire:click="selectCounty('{{ $county->id }}','{{ $county->name }}')"
-                                        class="px-4 py-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition-colors">
-                                        {{ $county->name }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @elseif(!empty($searchCounty))
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No counties found for
-                                "{{ $searchCounty }}".</p>
-                        @endif
+                <!-- County -->
+                <div class="space-y-2 relative">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">County</label>
+                    <div class="relative">
+                        <input type="text" wire:model.live="searchCounty"
+                            placeholder="{{ $newsType === 'local' ? 'Search for a county…' : 'Select “Local” to enable' }}"
+                            class="w-full px-3 py-2 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-full shadow-sm bg-white dark:bg-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                            @disabled($newsType !== 'local') />
+
                     </div>
+                    @if($selectedCounty)
+                        <p class="text-green-600 text-sm font-medium flex items-center gap-1.5">
+
+                            {{ $selectedCounty }}
+                        </p>
+                    @endif
+                    @if(!empty($counties))
+                        <ul
+                            class="absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 rounded-xl shadow-lg max-h-60 overflow-auto border border-gray-100 dark:border-gray-600">
+                            @foreach($counties as $c)
+                                <li wire:click="selectCounty('{{ $c->id }}','{{ $c->name }}')"
+                                    class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-colors
+                                                           {{ $selectedCountyId == $c->id ? 'bg-blue-50 dark:bg-blue-900' : '' }}">
+                                    {{ $c->name }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    @elseif($searchCounty)
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">No counties found for "{{ $searchCounty }}"
+                        </p>
+                    @endif
+                    @error('selectedCountyId') <span class="block text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <!-- CONSTITUENCY -->
-                <div class="flex flex-col items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800 h-full">
-                    <label for="constituency"
-                        class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Constituency</label>
-                    <p class="text-green-500 text-sm mb-1">{{$selectedConstituency}}</p>
-                    <div class="relative w-full">
-                        <input id="constituency" type="text" wire:model.live="searchConstituency"
-                            placeholder="Search for a constituency..."
-                            class="w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                <!-- Constituency -->
+                <div class="space-y-2 relative">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Constituency</label>
+                    <div class="relative">
+                        <input type="text" wire:model.live="searchConstituency" placeholder="Search for a constituency…"
+                        class="w-full px-3 py-2 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-full shadow-sm bg-white dark:bg-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
 
-                        @if(!empty($constituencies))
-                            <ul
-                                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                                @foreach($constituencies as $constituency)
-                                    <li wire:click="selectConstituency('{{ $constituency->id }}','{{$constituency->name}}')"
-                                        class="px-4 py-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition-colors
-                                                                            {{ $selectedConstituencyId == $constituency->id ? 'bg-blue-50 dark:bg-blue-800' : '' }}">
-                                        {{ $constituency->name }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @elseif(!empty($searchConstituency))
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                No constituencies found for "{{ $searchConstituency }}".
-                            </p>
-                        @endif
                     </div>
+                    @if($selectedConstituency)
+                        <p class="text-green-600 text-sm font-medium flex items-center gap-1.5">
+
+                            {{ $selectedConstituency }}
+                        </p>
+                    @endif
+                    @if(!empty($constituencies))
+                        <ul
+                            class="absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 rounded-xl shadow-lg max-h-60 overflow-auto border border-gray-100 dark:border-gray-600">
+                            @foreach($constituencies as $c)
+                                <li wire:click="selectConstituency('{{ $c->id }}','{{ $c->name }}')"
+                                    class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-colors
+                                                           {{ $selectedConstituencyId == $c->id ? 'bg-blue-50 dark:bg-blue-900' : '' }}">
+                                    {{ $c->name }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    @elseif($searchConstituency)
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">No constituencies found for
+                            "{{ $searchConstituency }}"</p>
+                    @endif
+                    @error('selectedConstituencyId') <span class="block text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <!-- SUBCOUNTY -->
-                <div class="flex flex-col items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800 h-full">
-                    <label for="subcounty"
-                        class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Subcounty</label>
-                    <p class="text-green-500 text-sm mb-1">{{$selectedSubcounty}}</p>
-                    <div class="relative w-full">
-                        <input id="subcounty" type="text" wire:model.live="searchSubcounty"
-                            placeholder="Search for a subcounty..."
-                            class="w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                <!-- Subcounty -->
+                <div class="space-y-2 relative">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sub-county</label>
+                    <div class="relative">
+                        <input type="text" wire:model.live="searchSubcounty" placeholder="Search for a sub-county…"
+                        class="w-full px-3 py-2 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-full shadow-sm bg-white dark:bg-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
 
-                        @if(!empty($subcounties))
-                            <ul
-                                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                                @foreach($subcounties as $subcounty)
-                                    <li wire:click="selectSubcounty('{{ $subcounty->id }}','{{ $subcounty->name }}')"
-                                        class="px-4 py-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition-colors">
-                                        {{ $subcounty->name }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @elseif(!empty($searchSubcounty))
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No subcounties found for
-                                "{{ $searchSubcounty }}".</p>
-                        @endif
                     </div>
+                    @if($selectedSubcounty)
+                        <p class="text-green-600 text-sm font-medium flex items-center gap-1.5">
+                            {{-- <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                            </svg> --}}
+                            {{ $selectedSubcounty }}
+                        </p>
+                    @endif
+                    @if(!empty($subcounties))
+                        <ul
+                            class="absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 rounded-xl shadow-lg max-h-60 overflow-auto border border-gray-100 dark:border-gray-600">
+                            @foreach($subcounties as $s)
+                                <li wire:click="selectSubcounty('{{ $s->id }}','{{ $s->name }}')"
+                                    class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-colors
+                                                           {{ $selectedSubcountyId == $s->id ? 'bg-blue-50 dark:bg-blue-900' : '' }}">
+                                    {{ $s->name }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    @elseif($searchSubcounty)
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">No sub-counties found for
+                            "{{ $searchSubcounty }}"</p>
+                    @endif
+                    @error('selectedSubcountyId') <span class="block text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
-
-            <!-- Title Section -->
-            <div class="flex flex-col p-6 rounded-lg bg-gray-50 dark:bg-gray-800 mb-6">
-                <label for="title" class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
-                <textarea name="title" id="title" wire:model="title" rows="2"
-                    class="w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+<br/>
+            <!-- Title Input -->
+            <div class="space-y-2 w-full">
+                <label class="block text-base font-semibold text-gray-800 dark:text-gray-200">Title</label>
+                <input type="text" wire:model.live="title"
+                    class="block w-full max-w-full px-3 py-2 text-lg font-semibold border-2 border-gray-200 dark:border-gray-600 rounded-full shadow-sm bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                    placeholder="Enter news title..." />
+                @error('title')
+                    <span class="block text-red-500 text-sm mt-1">{{ $message }}</span>
+                @enderror
             </div>
 
-            <!-- Image Upload Section -->
-            <div class="flex flex-col p-6 rounded-lg bg-gray-50 dark:bg-gray-800 mb-6">
-                <label for="image" class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Featured
-                    Image</label>
-                <input type="file" name="image" id="image" wire:model="image"
-                    class="w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-500">
+<br/>
+<!-- Featured Image Upload -->
+<div class="space-y-2">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Featured Image</label>
+
+    <!-- Upload Container -->
+    <div
+        class="relative flex items-center justify-center w-full h-56 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl shadow-md bg-white dark:bg-gray-900 transition hover:border-blue-500 overflow-hidden group"
+        x-data="{ isUploading: false }"
+        x-on:livewire-upload-start="isUploading = true"
+        x-on:livewire-upload-finish="isUploading = false"
+        x-on:livewire-upload-error="isUploading = false"
+    >
+        <!-- File Input -->
+        <input
+            type="file"
+            wire:model="image"
+            accept="image/*"
+            id="featured-image-upload"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+        />
+
+        <!-- Clickable label that triggers the file input -->
+        <label for="featured-image-upload" class="absolute inset-0 w-full h-full cursor-pointer">
+            <!-- Conditional image preview or default icon -->
+            @if ($image)
+                <!-- Image Preview -->
+                <div class="w-full h-full flex items-center justify-center">
+                    <img
+                        src="{{ is_string($image) ? asset($image) : $image->temporaryUrl() }}"
+                        class="w-full h-full object-cover rounded-2xl"
+                    />
+                    <!-- Change image overlay -->
+                    <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                        <span class="text-white font-medium">Change Image</span>
+                    </div>
+                </div>
+            @else
+                <!-- Default upload state -->
+                <div class="pointer-events-none text-center p-4">
+                    <img
+                        src="{{ asset('images/upload.png') }}"
+                        alt="Upload"
+                        class="mx-auto w-10 h-10 object-contain opacity-70 group-hover:opacity-100 transition duration-200"
+                    />
+                    <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-500">
+                        Click to upload or drag and drop
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        Recommended: 1200x630 pixels
+                    </p>
+                </div>
+            @endif
+        </label>
+
+        <!-- Loading indicator -->
+        <template x-if="isUploading">
+            <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
             </div>
+        </template>
+    </div>
 
-            <!-- Quill Editor Section -->
-            {{-- <div class="flex flex-col p-6 rounded-lg bg-gray-50 dark:bg-gray-800 mb-6">
-                <label class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Content</label>
-                <div wire:ignore>
-                    <div id="quill-editor" style="height: 300px;" class="bg-white dark:bg-gray-700 rounded-md"></div> --}}
-                    <textarea id="quill-content" name="content" wire:model.live="content" style="height: 300px;" class="w-full bg-white dark:bg-gray-700 rounded-md" ></textarea>
+    <!-- Validation Error -->
+    @error('image')
+        <span class="block text-red-500 text-sm mt-1">{{ $message }}</span>
+    @enderror
+</div>
 
-                {{-- </div> --}}
-            {{-- </div> --}}
+
+</div></br>
+
+            {{-- new editor section --}}
+
+            <div wire:ignore>
+                <textarea name="content" id="snow-editor1" cols="30" rows="10"></textarea>
+            </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-center">
-                <button type="submit" wire:loading.attr="disabled" type="button"
-                    class="px-8 pl-6 bg-blue-600 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
-                    <span wire:loading.remove wire:target="createNews">Publish News</span>
-                    <span wire:loading wire:target="createNews">
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24">
+            <div class="pt-8 text-center">
+                <button type="submit" wire:loading.attr="disabled" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-black font-semibold rounded-xl transition-all
+                               disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
+                    <span wire:loading.remove>Publish News</span>
+                    <span wire:loading class="flex items-center justify-center gap-2">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                             </circle>
                             <path class="opacity-75" fill="currentColor"
@@ -140,71 +238,30 @@
                         Publishing...
                     </span>
                 </button>
-
-                {{-- <button type="submit" wire:loading.attr="disabled"
-                    class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-70">
-                    <span wire:loading.remove wire:target="createNews">Publish News</span>
-                    <span wire:loading wire:target="createNews">
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        Publishing...
-                    </span>
-                </button> --}}
             </div>
+            <script
+                src="https://cdn.tiny.cloud/1/ul1npk37t68rbwppxs00ivosayatgvo58p26imn4nkk61s5w/tinymce/7/tinymce.min.js"
+                referrerpolicy="origin"></script>
+
+            <script>
+                    tinymce.init({
+                        selector: '#snow-editor1',
+                        plugins: 'code table lists',
+                        toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | indent outdent | bullist numlist | code | table',
+                        setup: function (editor) {
+                            // Set initial content from Livewire (escaped properly)
+                            editor.on('init', function (e) {
+                                editor.setContent(@this.get('content'));
+                            });
+
+                            // Update Livewire when content changes
+                            editor.on('Change KeyUp', function () {
+                                @this.set('content', editor.getContent());
+                            });
+                        }
+                    });
+            </script>
+
         </form>
     </div>
 </div>
-
-
-
-<script>
-    document.getElementById('quill-content').dispatchEvent(new Event('input'));
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Quill editor
-        const quill = new Quill('#quill-editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'color': [] }, { 'background': [] }],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                    ['link', 'image'],
-                    ['clean']
-                ]
-            },
-            placeholder: 'Write your news content here...',
-        });
-
-        // Set initial content if there's any
-        @if (isset($content) && !empty($content))
-            console.log($content);
-        quill.root.innerHTML = `{!! $content !!}`;
-        @endif
-
-        let timeout;
-        quill.on('text-change', function () {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                const content = quill.root.innerHTML;
-                document.getElementById('quill-content').value = content;
-                Livewire.emit('quillContentUpdated', content);
-            }, 300); // Debounce input
-        });
-
-        // Livewire hook to update editor when model changes
-        Livewire.hook('message.processed', (message, component) => {
-            console.log(message.updateQueue);
-            if (message.updateQueue[0]?.payload.name === 'content') {
-                quill.root.innerHTML = message.component.get('content');
-            }
-        });
-    });
-</script>

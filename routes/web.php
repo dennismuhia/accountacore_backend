@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\RoleController;
 use App\Livewire\Admin\NewsContent;
 use Illuminate\Support\Facades\Route;
 
@@ -10,9 +12,7 @@ use App\Livewire\News\WriteNews;
 
 Route::view('/', 'welcome');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+
 
 Route::view('profile', 'profile')
     ->middleware(['auth'])
@@ -20,6 +20,12 @@ Route::view('profile', 'profile')
 
 require __DIR__.'/auth.php';
 
+Route::post('user/login', [AuthController::class,'login'])->name('user.login');
+Route::post('user/logout', [AuthController::class, 'logout'])->name('user.logout');
+
+Route::post('login', [\App\Http\Controllers\Auth\LoginController::class, 'login'])
+    ->middleware('guest')
+    ->name('login');
 
 Route::group(['prefix' => 'region', 'middleware' => 'auth'], function () {
     Route::get('/counties', [RegionController::class,'index'])->name('region.index');
@@ -33,13 +39,20 @@ Route::group(['prefix' => 'region', 'middleware' => 'auth'], function () {
 });
 
 
+Route::get('dashboard', [NewsController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::group(['prefix' => 'news', 'middleware' => 'auth'], function () {
-    // WriteNews
-    // Route::get('write-news', [WriteNews::class, 'render'])->name('write.news');
-    // Route::post('write-news', [NewsContent::class])->name('write.news.store');
+    Route::get('delete-news/{id}',[NewsController::class,'deleteNews'])->name('delete.news');
+    Route::get('edit-news/{id}',[NewsController::class,'editNews'])->name('edit.news');
+
     Route::get('write-news', [NewsController::class, 'writeNews'])->name('write.news');
+
 });
 
+// Route::get('/roles', function () {
+//     return view('users.role.list');
+// });
 Route::get('/phpinfo', function () {
     phpinfo();
 });
+
+Route::resource('roles', RoleController::class)->middleware(['auth', 'verified']);

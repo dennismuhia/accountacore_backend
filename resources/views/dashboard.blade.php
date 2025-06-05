@@ -155,7 +155,7 @@
                     </div> <!-- end card-title-->
 
                     <div dir="ltr">
-                        <div id="dash-performance-chart" class="apex-charts"></div>
+                        <div id="dash-performance-chart1" class="apex-charts"></div>
                     </div>
                 </div> <!-- end card body -->
             </div> <!-- end card -->
@@ -167,7 +167,9 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Conversions</h5>
-                    <div id="conversions" class="apex-charts mb-2 mt-n2"></div>
+                    {{-- <div id="conversions" class="apex-charts mb-2 mt-n2"></div> --}}
+                    <div id="conversions1" class="apex-charts mb-2 mt-n2" style="min-height: 200px;"></div>
+
                     <div class="row text-center">
                         <div class="col-6">
                             <p class="text-muted mb-2">This Week</p>
@@ -179,11 +181,25 @@
                         </div> <!-- end col -->
                     </div> <!-- end row -->
                     <div class="text-center">
-                        <button type="button" class="btn btn-light shadow-none w-100">View Details</button>
+                        {{-- <button type="button" class="btn btn-light shadow-none w-100">View Details</button> --}}
                     </div> <!-- end row -->
                 </div>
             </div>
-        </div> <!-- end left chart card -->
+        </div>
+        {{-- <div class="card">
+            <h4>Conversions</h4>
+            <canvas id="conversionChart" width="50" height="50"></canvas>
+            <div style="text-align: center; font-size: 18px; margin-top: -50px;">
+                <strong>{{ $conversionRate }}%</strong><br>
+                Returning Customer
+            </div>
+            <div class="mt-3 text-center">
+                <div>This Week <strong>{{ number_format($thisWeek / 1000, 1) }}k</strong></div>
+                <div>Last Week <strong>{{ number_format($lastWeek / 1000, 2) }}k</strong></div>
+            </div>
+        </div> --}}
+
+         <!-- end left chart card -->
 
         <div class="col-lg-4">
             <div class="card">
@@ -424,6 +440,96 @@
 
                 </div>
             </div>
+            <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    var options = {
+                        chart: {
+                            height: 250,
+                            type: "radialBar"
+                        },
+                        series: [{{ $conversionRate }}],
+                        colors: ["#FF7A59"],
+                        plotOptions: {
+                            radialBar: {
+                                hollow: {
+                                    size: "60%"
+                                },
+                                dataLabels: {
+                                    name: {
+                                        show: false
+                                    },
+                                    value: {
+                                        fontSize: "22px",
+                                        color: "#333",
+                                        offsetY: 6,
+                                        formatter: function (val) {
+                                            return val + "%";
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        labels: ["Returning Customers"]
+                    };
+
+                    var chart = new ApexCharts(document.querySelector("#conversions1"), options);
+                    chart.render();
+                });
+
+                document.addEventListener("DOMContentLoaded", function () {
+    fetch('/api/news-views')
+        .then(res => res.json())
+        .then(({ data }) => {
+            const months = data.map(item => item.month);
+            const views = data.map(item => item.views);
+
+            const options = {
+                chart: {
+                    height: 350,
+                    type: 'bar',
+                    toolbar: { show: false }
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '50%',
+                        borderRadius: 4
+                    }
+                },
+                dataLabels: { enabled: false },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                series: [{
+                    name: 'Page Views',
+                    data: views
+                }],
+                xaxis: {
+                    categories: months
+                },
+                yaxis: {
+                    title: { text: 'Views' }
+                },
+                fill: {
+                    opacity: 1,
+                    colors: ['#ff5722']
+                },
+                tooltip: {
+                    y: {
+                        formatter: val => `${val.toLocaleString()} views`
+                    }
+                },
+                colors: ['#ff5722']
+            };
+
+            const chart = new ApexCharts(document.querySelector("#dash-performance-chart1"), options);
+            chart.render();
+        });
+});
+
+            </script>
         </div>
     @endforeach
 @endsection

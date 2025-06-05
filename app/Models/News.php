@@ -35,5 +35,23 @@ class News extends Model
         return $this->hasMany(News::class);
     }
 
+    public function views()
+    {
+        return $this->hasMany(NewsView::class);
+    }
 
+    public static function getMostBookmarked($limit = 10)
+{
+    return self::withCount('bookmarkedBy')
+        ->having('bookmarked_by_count', '>', 1)
+        ->orderByDesc('bookmarked_by_count')
+        ->take($limit)
+        ->get()
+        ->map(function ($news) {
+            return [
+                'title' => $news->title,
+                'bookmarks' => $news->bookmarked_by_count,
+            ];
+        });
+}
 }

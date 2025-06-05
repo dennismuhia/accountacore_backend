@@ -66,7 +66,7 @@ class CountyApiController extends Controller
         return response()->json($subcounties);
     }
 
-    // app/Http/Controllers/LocationController.php
+    
     public function saveUserLocation(Request $request)
     {
         $request->validate([

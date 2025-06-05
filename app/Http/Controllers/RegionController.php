@@ -19,7 +19,7 @@ class RegionController extends Controller
 
     public function uploadCounties(Request $request)
     {
-   
+
         try {
             $file = $request->file('upload');
             $path = $file->getRealPath();
@@ -47,7 +47,7 @@ class RegionController extends Controller
             $file = $request->file('upload');
             $path = $file->getRealPath();
             $data = array_map('str_getcsv', file($path));
-         
+
              // Example: loop through data
         foreach ($data as $row) {
             Region::create([
@@ -67,7 +67,7 @@ class RegionController extends Controller
     }
 
     public function viewConstituencies($id){
-        $constituencies=Region::where('county_id',$id)->paginate(10); 
+        $constituencies=Region::where('county_id',$id)->paginate(10);
         return view('regions.constituencies.index',compact('constituencies'));
     }
 
@@ -78,12 +78,12 @@ class RegionController extends Controller
     }
 
     public function uploadSubcounties(Request $request){
-        
+
         try {
             $file = $request->file('upload');
             $path = $file->getRealPath();
             $data = array_map('str_getcsv', file($path));
-      
+
              // Example: loop through data
         foreach ($data as $row) {
             Subcounty::create([
@@ -103,7 +103,7 @@ class RegionController extends Controller
     }
 
     public function viewSubcounties($id){
-        $subcounties=Subcounty::where('region_id',$id)->paginate(10); 
+        $subcounties=Subcounty::where('region_id',$id)->paginate(10);
         return view('regions.subcounties.index',compact('subcounties'));
     }
 
@@ -111,5 +111,11 @@ class RegionController extends Controller
         $constituency=Subcounty::findOrFail($id);
         $constituency->delete();
         return back()->with('success', 'Subcounty deleted successfully!');
+    }
+
+    public function deleteCounty($id){
+        $county=County::findOrFail($id);
+        $county->delete();
+        return back()->with('success', 'County deleted successfully!');
     }
 }

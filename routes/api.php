@@ -44,6 +44,8 @@ Route::prefix('v1/accountacore')->group(function () {
     // Route::post('/addbookmark/{userid}/{newsId}',[NewsApiController::class,'addBookmark']);
     Route::get('fetch_user/bookmarks/{id}',[NewsApiController::class,'getUserBookmarks']);
     Route::get('/addbookmark/{userid}/{newsId}',[AccountController::class,'addBookmark']);
+    Route::get('get-detailed-finacials/{newsId}',[NewsApiController::class,'getDetailedFinacials']);
+    Route::get('/increase-news-view/user/{id}/{userId}',[NewsApiController::class,'increaseView']);
 });
 
 

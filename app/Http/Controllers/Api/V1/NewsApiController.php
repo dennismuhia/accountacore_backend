@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\News;
 use App\Models\User;
+use App\Models\Financial;
 class NewsApiController extends Controller
 {
     public function store(Request $request)
@@ -106,5 +107,65 @@ class NewsApiController extends Controller
         ]);
     }
 
-   
+    public function getDetailedFinacials($newsId)
+    {
+        $financials = Financial::where('news_id', $newsId)->get();
+
+        $total = $financials->sum(function ($item) {
+            return (float) $item->amount;
+        });
+
+        $data = $financials->map(function ($item) use ($total) {
+            $amount = (float) $item->amount;
+            $percentage = $total > 0 ? ($amount / $total) * 100 : 0;
+
+            return [
+                'id' => $item->id,
+                'news_id' => $item->news_id,
+                'name' => $item->name,
+                'amount' => $item->amount,
+                'description' => $item->description,
+                'percentage' => round($percentage, 2), // include percentage
+                'created_at' => $item->created_at,
+                'updated_at' => $item->updated_at,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All financials retrieved successfully.',
+            'total' => number_format($total, 2, '.', ''),
+            'data' => $data,
+        ]);
+    }
+
+    public function increaseView($id,$userId)
+    {
+        // $news = News::findOrFail($id);
+        try {
+            $news = News::with(['county', 'region', 'subcounty'])->findOrFail($id);
+
+
+                $alreadyViewed = $news->views()->where('user_id', $userId)->exists();
+
+                if (!$alreadyViewed) {
+                    $news->views()->create(['user_id' => $userId]);
+                }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'News item retrieved successfully.',
+                'data' => $news
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve news item.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+        // return response()->json(['vew'=>'View increased']);
+    }
 }

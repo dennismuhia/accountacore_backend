@@ -1,5 +1,5 @@
 <x-app-layout>
-  
+
     @if(session('success'))
         <div class="p-2 bg-green-200 text-green-800 rounded mb-2">
             {{ session('success') }}
@@ -66,21 +66,55 @@
                                         <td class="px-6 py-4">
                                             <!-- other data -->
                                         </td>
-                                        <td class="px-6 py-4 text-right">
-                                            {{-- <button data-modal-target="crud-modal" data-modal-toggle="crud-modal"
-                                                data-county-id="{{ $county->id }}"
-                                                class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                type="button">
-                                                Add Constituency
-                                            </button> | --}}
+                                        <td class="px-6 py-4 text-right space-x-2">
+                                            <!-- Edit -->
                                             <a href="#"
-                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a> |
-                                                <a href="#"  data-modal-target="crud-modal" data-modal-toggle="crud-modal"
+                                                class="inline-flex items-center text-blue-600 dark:text-blue-500 hover:underline"
+                                                title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5l-4.88 4.88a2 2 0 00-.47.78L12 10l1.84-.16a2 2 0 00.78-.47l4.88-4.88a1.5 1.5 0 00-2.12-2.12z" />
+                                                </svg>
+                                            </a>
+
+                                            <!-- Add Constituency -->
+                                            <a href="#" data-modal-target="crud-modal" data-modal-toggle="crud-modal"
                                                 data-county-id="{{ $county->id }}"
-                                                class="font-medium text-green-600 dark:text-green-500 hover:underline">Add Constituency</a>
-                                                 <a href="{{ route('constituencies.show',['id'=>$county->id]) }}"
-                                                class="font-medium text-orange-600 dark:text-orange-500 hover:underline">View Constituency</a>
+                                                class="inline-flex items-center text-green-600 dark:text-green-500 hover:underline"
+                                                title="Add Constituency">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </a>
+
+                                            <!-- View Constituency -->
+                                            <a href="{{ route('constituencies.show',['id'=>$county->id]) }}"
+                                                class="inline-flex items-center text-blue-600 dark:text-orange-500 hover:underline"
+                                                title="View Constituency">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            </a>
+
+                                              <!-- Delete -->
+                                              <a href="{{route('delete.county',['id'=> $county->id])}}"
+                                              class="inline-flex items-center text-red-600 dark:text-orange-500 hover:underline" title="Delete"
+                                                aria-label="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a2 2 0 012 2v1H5V9a2 2 0 012-2h10z" />
+                                                </svg>
+                                            </a>
                                         </td>
+
                                     </tr>
                                 @endforeach
                             </tbody>

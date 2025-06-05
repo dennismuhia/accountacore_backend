@@ -36,6 +36,7 @@ Route::group(['prefix' => 'region', 'middleware' => 'auth'], function () {
     Route::get('delete/constituency/{id}',[RegionController::class,'deleteConstituency'])->name('delete.constituency');
     Route::get('view/subcounties/{id}',[RegionController::class,'viewSubcounties'])->name('view.subcounties');
     Route::get('delete/subcounty/{id}',[RegionController::class,'deleteSubcounties'])->name('delete.subcounty');
+    Route::get('delete/county/{id}',[RegionController::class,'deleteCounty'])->name('delete.county');
 });
 
 
@@ -48,9 +49,6 @@ Route::group(['prefix' => 'news', 'middleware' => 'auth'], function () {
 
 });
 
-// Route::get('/roles', function () {
-//     return view('users.role.list');
-// });
 Route::get('/phpinfo', function () {
     phpinfo();
 });

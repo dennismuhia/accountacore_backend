@@ -1,28 +1,28 @@
 <style>
     /* Tailwind-based Pagination Styling */
-.pagination {
-    @apply flex items-center gap-2;
-}
+    .pagination {
+        @apply flex items-center gap-2;
+    }
 
-.pagination .page-item {
-    @apply inline-flex;
-}
+    .pagination .page-item {
+        @apply inline-flex;
+    }
 
-.pagination .page-link {
-    @apply px-3 py-1 rounded-md text-sm font-medium transition-colors;
-}
+    .pagination .page-link {
+        @apply px-3 py-1 rounded-md text-sm font-medium transition-colors;
+    }
 
-.pagination .page-item.active .page-link {
-    @apply bg-blue-600 text-white;
-}
+    .pagination .page-item.active .page-link {
+        @apply bg-blue-600 text-white;
+    }
 
-.pagination .page-item:not(.active) .page-link {
-    @apply text-gray-700 hover:bg-gray-100;
-}
+    .pagination .page-item:not(.active) .page-link {
+        @apply text-gray-700 hover:bg-gray-100;
+    }
 
-.pagination .page-item.disabled .page-link {
-    @apply text-gray-400 cursor-not-allowed;
-}
+    .pagination .page-item.disabled .page-link {
+        @apply text-gray-400 cursor-not-allowed;
+    }
 </style>
 
 @extends('layouts.vertical', ['title' => 'Dashboard'])
@@ -199,7 +199,7 @@
             </div>
         </div> --}}
 
-         <!-- end left chart card -->
+        <!-- end left chart card -->
 
         <div class="col-lg-4">
             <div class="card">
@@ -478,56 +478,56 @@
                 });
 
                 document.addEventListener("DOMContentLoaded", function () {
-    fetch('/api/news-views')
-        .then(res => res.json())
-        .then(({ data }) => {
-            const months = data.map(item => item.month);
-            const views = data.map(item => item.views);
+                    fetch('/api/news-views')
+                        .then(res => res.json())
+                        .then(({ data }) => {
+                            const months = data.map(item => item.month);
+                            const views = data.map(item => item.views);
 
-            const options = {
-                chart: {
-                    height: 350,
-                    type: 'bar',
-                    toolbar: { show: false }
-                },
-                plotOptions: {
-                    bar: {
-                        columnWidth: '50%',
-                        borderRadius: 4
-                    }
-                },
-                dataLabels: { enabled: false },
-                stroke: {
-                    show: true,
-                    width: 2,
-                    colors: ['transparent']
-                },
-                series: [{
-                    name: 'Page Views',
-                    data: views
-                }],
-                xaxis: {
-                    categories: months
-                },
-                yaxis: {
-                    title: { text: 'Views' }
-                },
-                fill: {
-                    opacity: 1,
-                    colors: ['#ff5722']
-                },
-                tooltip: {
-                    y: {
-                        formatter: val => `${val.toLocaleString()} views`
-                    }
-                },
-                colors: ['#ff5722']
-            };
+                            const options = {
+                                chart: {
+                                    height: 350,
+                                    type: 'bar',
+                                    toolbar: { show: false }
+                                },
+                                plotOptions: {
+                                    bar: {
+                                        columnWidth: '50%',
+                                        borderRadius: 4
+                                    }
+                                },
+                                dataLabels: { enabled: false },
+                                stroke: {
+                                    show: true,
+                                    width: 2,
+                                    colors: ['transparent']
+                                },
+                                series: [{
+                                    name: 'Page Views',
+                                    data: views
+                                }],
+                                xaxis: {
+                                    categories: months
+                                },
+                                yaxis: {
+                                    title: { text: 'Views' }
+                                },
+                                fill: {
+                                    opacity: 1,
+                                    colors: ['#ff5722']
+                                },
+                                tooltip: {
+                                    y: {
+                                        formatter: val => `${val.toLocaleString()} views`
+                                    }
+                                },
+                                colors: ['#ff5722']
+                            };
 
-            const chart = new ApexCharts(document.querySelector("#dash-performance-chart1"), options);
-            chart.render();
-        });
-});
+                            const chart = new ApexCharts(document.querySelector("#dash-performance-chart1"), options);
+                            chart.render();
+                        });
+                });
 
             </script>
         </div>
@@ -535,5 +535,5 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/pages/dashboard.js'])
+@vite(['resources/js/pages/dashboard.js'])
 @endsection

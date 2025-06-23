@@ -27,7 +27,7 @@ class AccountController extends Controller
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:6|confirmed',
             ]);
-    
+
             if ($validator->fails()) {
                 Log::warning('User signup validation failed', ['errors' => $validator->messages()]);
                 return response()->json([
@@ -35,11 +35,11 @@ class AccountController extends Controller
                     'errors' => $validator->messages(),
                 ], 400);
             }
-    
+
             // Generate unique slug & verification token
             $uniqueSlug = Str::random(20);
             $verificationToken = random_int(10000, 99999);
-    
+
             // Create and save user
             $user = User::create([
                 'name' => $request->name,
@@ -50,7 +50,7 @@ class AccountController extends Controller
                 'two_factor_recovery_codes' => $verificationToken,
                 'two_factor_secret' => $verificationToken,
             ]);
-    
+
             try {
                 // Send verification email
                 Mail::to($request->email)->send(new AuthMail([
@@ -58,22 +58,22 @@ class AccountController extends Controller
                     'code' => $verificationToken,
                     'message' => 'Here is your verification email',
                 ]));
-    
+
                 Log::info('Verification email sent', ['email' => $request->email]);
-    
+
             } catch (\Exception $e) {
                 // Log email sending failure
                 Log::error('Failed to send verification email', [
                     'email' => $request->email,
                     'error' => $e->getMessage()
                 ]);
-    
+
                 return response()->json([
                     'code' => 500,
                     'message' => 'Account created, but failed to send verification email. Please contact support.',
                 ], 500);
             }
-    
+
             // Return success response
             Log::info('User created successfully', ['user_id' => $user->id]);
             return response()->json([
@@ -82,7 +82,7 @@ class AccountController extends Controller
                 'user' => $user,
                 'message' => 'Account created successfully. Please check your email for the code sent to proceed.',
             ]);
-    
+
         } catch (\Exception $e) {
             // Log general failure
             Log::error('User signup failed', ['error' => $e->getMessage()]);
@@ -101,33 +101,33 @@ class AccountController extends Controller
                 'email' => 'required|email|exists:users,email',
                 'otp' => 'required|digits:5',
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json([
                     'code' => 400,
                     'errors' => $validator->messages(),
                 ], 400);
             }
-    
+
             // Find the user by email
             $user = User::where('email', $request->email)->with('county','region','subcounty')->first();
-    
+
             if (!$user) {
                 return response()->json([
                     'code' => 404,
                     'message' => 'User not found',
                 ], 404);
             }
-    
+
             // Check if the OTP matches
             if ($user->two_factor_secret == $request->otp) {
                 // Mark user as verified
                 $user->email_verified_at = now();
                 $user->two_factor_secret = null; // Clear the OTP after successful verification
                 $user->save();
-    
+                $user->assignRole("user");
                 Log::info('User verified successfully', ['user_id' => $user->id]);
-    
+
                 return response()->json([
                     'code' => 200,
                     'token' => $user->createToken('authToken')->plainTextToken,
@@ -136,45 +136,45 @@ class AccountController extends Controller
                 ]);
             } else {
                 Log::warning('Invalid OTP attempt', ['email' => $request->email]);
-    
+
                 return response()->json([
                     'code' => 400,
                     'message' => 'Invalid OTP. Please try again.',
                 ], 400);
             }
-    
+
         } catch (\Exception $e) {
             Log::error('OTP verification failed', ['error' => $e->getMessage()]);
-    
+
             return response()->json([
                 'code' => 500,
                 'message' => 'Something went wrong. Please try again later.',
             ], 500);
         }
     }
-    
+
     public function login(Request $request)
     {
-       
+
         // Step 1: Validate the request
         $request->validate([
             'identifier' => 'required',
             'password' => 'required|string|min:6',
         ]);
-      
+
         $identifier = $request->input('identifier');
         $fieldType = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone_number';
-    
+
         // Step 2: Check if user exists
         $user = User::where($fieldType, $identifier)->first();
-    
+
         if (!$user) {
             return response()->json([
                 'code' => 404,
                 'message' => "Account with this {$fieldType} does not exist."
             ], 404);
         }
-    
+
         // Step 3: Optional email verification check
         if ($fieldType === 'email' && is_null($user->email_verified_at)) {
             return response()->json([
@@ -182,11 +182,11 @@ class AccountController extends Controller
                 'message' => 'Your email is not verified. Please verify before logging in.'
             ], 403);
         }
-    
+
         // Step 4: Attempt login
         if (Auth::attempt([$fieldType => $identifier, 'password' => $request->password])) {
             $user = Auth::user()->load('county', 'region', 'subcounty');
-    
+
             return response()->json([
                 'code' => 200,
                 'message' => 'Login successful',
@@ -194,14 +194,14 @@ class AccountController extends Controller
                 'token' => $user->createToken('authToken')->plainTextToken
             ]);
         }
-    
+
         // Step 5: Invalid credentials
         return response()->json([
             'code' => 401,
             'message' => 'Invalid credentials. Please try again.'
         ], 401);
     }
-    
+
 
 
     public function updateCounty(Request $request)
@@ -212,27 +212,27 @@ class AccountController extends Controller
                 'email' => 'required|email|exists:users,email',
                 'county_id' => 'required|integer|exists:counties,id'
             ]);
-    
+
             // Step 2: Find the user by email
             $user = User::where('email', $validatedData['email'])->first();
-    
+
             if (!$user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found'
                 ], 404);
             }
-    
+
             // Step 3: Update the county_id
             $user->county_id = $validatedData['county_id'];
             $user->save();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'County updated successfully',
                 'user' => $user
             ], 200);
-    
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -241,7 +241,7 @@ class AccountController extends Controller
             ], 500);
         }
     }
-      
+
     public function updateConstituency(Request $request)
     {
         try {
@@ -250,27 +250,27 @@ class AccountController extends Controller
                 'email' => 'required|email|exists:users,email',
                 'constituency_id' => 'required|integer|exists:regions,id'
             ]);
-    
+
             // Step 2: Find the user by email
             $user = User::where('email', $validatedData['email'])->first();
-    
+
             if (!$user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found'
                 ], 404);
             }
-    
+
             // Step 3: Update the county_id
             $user->region_id = $validatedData['constituency_id'];
             $user->save();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Constituency updated successfully',
                 'user' => $user
             ], 200);
-    
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -289,27 +289,27 @@ class AccountController extends Controller
                 'email' => 'required|email|exists:users,email',
                 'subcounty_id' => 'required|integer|exists:regions,id'
             ]);
-    
+
             // Step 2: Find the user by email
             $user = User::where('email', $validatedData['email'])->first();
-    
+
             if (!$user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found'
                 ], 404);
             }
-    
+
             // Step 3: Update the county_id
             $user->subcounty_id = $validatedData['subcounty_id'];
             $user->save();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Coonstituency updated successfully',
                 'user' => $user
             ], 200);
-    
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -329,14 +329,14 @@ class AccountController extends Controller
     {
         $user = User::find($userid);
         $news = News::find($newsId);
-    
+
         if (!$user || !$news) {
             return response()->json([
                 'bookmarked' => false,
                 'message' => 'User or News not found'
             ], 404);
         }
-    
+
         if ($user->bookmarkedNews()->where('news_id', $newsId)->exists()) {
             $user->bookmarkedNews()->detach($newsId);
             return response()->json(['bookmarked' => false, 'message' => 'Removed from bookmarks']);

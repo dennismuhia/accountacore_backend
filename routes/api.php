@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\NewsApiController;
 use App\Http\Controllers\Api\V1\AccountController;
 
 
+use App\Http\Controllers\RoleController;
 
 
 Route::get('/user', function (Request $request) {
@@ -48,7 +49,4 @@ Route::prefix('v1/accountacore')->group(function () {
     Route::get('/increase-news-view/user/{id}/{userId}',[NewsApiController::class,'increaseView']);
 });
 
-
-Route::get('/phpinfo', function () {
-    phpinfo();
-});
+Route::post('add/role',[RoleController::class,'assignRoleToUser']);

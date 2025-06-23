@@ -49,8 +49,18 @@ Route::group(['prefix' => 'news', 'middleware' => 'auth'], function () {
 
 });
 
-Route::get('/phpinfo', function () {
-    phpinfo();
-});
+
 
 Route::resource('roles', RoleController::class)->middleware(['auth', 'verified']);
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('roles', [RoleController::class, 'index'])->middleware('permission:view-roles');
+    Route::get('roles/create', [RoleController::class, 'create'])->middleware('permission:create-roles');
+    Route::post('roles', [RoleController::class, 'store'])->middleware('permission:create-roles');
+    Route::get('roles/{role}', [RoleController::class, 'show'])->middleware('permission:view-roles');
+    Route::get('roles/{role}/edit', [RoleController::class, 'edit'])->middleware('permission:edit-roles');
+    Route::put('roles/{role}', [RoleController::class, 'update'])->middleware('permission:edit-roles');
+    Route::delete('roles/{role}', [RoleController::class, 'destroy'])->middleware('permission:delete-roles');
+    Route::get('delete-user/{user_id}',[RoleController::class,'deleteuser'])->name('delete.user')->middleware('permission:view-roles');
+    Route::post('add/role',[RoleController::class,'assignRoleToUser'])->name('add.role')->middleware('permission:edit-roles');
+});

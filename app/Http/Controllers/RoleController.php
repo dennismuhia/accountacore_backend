@@ -5,13 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use App\Models\User;
 
 class RoleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $roles = Role::all();
-        return view('users.role.list', compact('roles'));
+
+        $search = $request->input('search');
+
+        $users = User::with('roles')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('roles', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(5);
+
+        return view('users.role.list', compact('roles','users'));
     }
 
     public function create()
@@ -58,7 +73,7 @@ class RoleController extends Controller
         ]);
 
         $role->update(['name' => $request->name]);
-        $role->syncPermissions($request->permissions);
+        $role->syncPermissions($request->permissions ?? []);
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
@@ -68,4 +83,24 @@ class RoleController extends Controller
         $role->delete();
         return redirect()->route('roles.index')->with('success', 'Role deleted successfully.');
     }
+
+    public function assignRoleToUser(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'role' => 'required|exists:roles,name',
+    ]);
+
+    $user = User::findOrFail($request->user_id);
+
+    $user->assignRole($request->role);
+
+    return back()->with('success', 'Role assigned to user successfully.');
+}
+
+public function deleteuser($user_id){
+    $user=User::findorFail($user_id);
+    $user->delete();
+    return back()->with('success', 'User deleted successfully.');
+}
 }
